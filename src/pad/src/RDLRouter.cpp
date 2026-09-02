@@ -1264,14 +1264,17 @@ std::vector<RDLRouter::GridEdge> RDLRouter::commitRoute(
 
 RDLRouter::GridEdge RDLRouter::removeGraphEdge(const GridGraphEdge& edge)
 {
+  const odb::Point& source = vertex_point_map_[edge.m_source];
+  const odb::Point& target = vertex_point_map_[edge.m_target];
   const float weight = graph_weight_[edge];
+  const int64_t direction_bias = source.y() == target.y() ? 1 : 0;
   boost::remove_edge(edge, graph_);
 
-  return {vertex_point_map_[edge.m_source],
-          vertex_point_map_[edge.m_target],
-          weight
-              / distance(vertex_point_map_[edge.m_source],
-                         vertex_point_map_[edge.m_target])};
+  // GridEdge stores the scale consumed by addGraphEdge. Remove the
+  // horizontal direction bias before converting the weight back to a scale.
+  return {source,
+          target,
+          (weight - direction_bias) / distance(source, target)};
 }
 
 std::vector<GridGraphVertex> RDLRouter::run(const odb::Point& source,
