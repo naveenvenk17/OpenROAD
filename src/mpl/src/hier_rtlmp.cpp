@@ -322,7 +322,10 @@ void HierRTLMP::runMultilevelAutoclustering()
   clustering_engine_->setHalos(base_halo_, macro_to_halo_);
   clustering_engine_->run();
 
-  if (!tree_->has_unfixed_macros) {
+  // Macro-only designs have no placement work once all macros are fixed.
+  // Keep the standard-cell path alive so injected macro placements still get
+  // the same temporary cell seeding and soft blockages as a normal run.
+  if (!tree_->has_unfixed_macros && !tree_->has_std_cells) {
     skip_macro_placement_ = true;
     return;
   }
